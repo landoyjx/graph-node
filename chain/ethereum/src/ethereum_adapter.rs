@@ -428,11 +428,13 @@ where
 
         // Ganache does not support calls by block hash.
         // See https://github.com/trufflesuite/ganache-cli/issues/745
-        let block_id = if self.is_ganache || *ETH_CALL_BY_NUMBER {
-            BlockId::Number(block_ptr.number.into())
-        } else {
-            BlockId::Hash(block_ptr.hash_as_h256())
-        };
+        // okchain net support calls by block hash too, hard code to block number, tofix
+        let block_id = BlockId::Number(block_ptr.number.into());
+        // let block_id = if self.is_ganache || *ETH_CALL_BY_NUMBER {
+        //     BlockId::Number(block_ptr.number.into())
+        // } else {
+        //     BlockId::Hash(block_ptr.hash_as_h256())
+        // };
 
         retry("eth_call RPC call", &logger)
             .when(|result| match result {
@@ -450,6 +452,8 @@ where
                     value: None,
                     data: Some(call_data.clone()),
                 };
+                // println!("\n\n\n------>eth_call rpc for block id {:#?}", Some(block_id));
+                // println!("request {:#?}", req);
                 web3.eth().call(req, Some(block_id)).then(|result| {
                     // Try to check if the call was reverted. The JSON-RPC response for
                     // reverts is not standardized, the current situation for the tested
